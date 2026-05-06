@@ -6,12 +6,12 @@ from sampling_mining_workflows_dsl.metadata.Metadata import Metadata
 from sampling_mining_workflows_dsl.operator.clustering.GroupingOperator import GroupingOperator
 
 if TYPE_CHECKING:
-    from sampling_mining_workflows_dsl.element.Set import Set
+    from sampling_mining_workflows_dsl.element.EagerSet import EagerSet
 
 
 class DistributionWorkflowAnalysis:
     def __init__(self, metadata: Metadata[int]):
-        self.map: dict[str, Set] = {}
+        self.map: dict[str, EagerSet] = {}
         self.metadata = metadata
 
     def analyze(self, workflow):

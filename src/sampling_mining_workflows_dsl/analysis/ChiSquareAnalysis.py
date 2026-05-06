@@ -2,14 +2,14 @@ from collections import Counter
 
 from scipy.stats import chisquare
 
-from sampling_mining_workflows_dsl.element.Set import Set
+from sampling_mining_workflows_dsl.element.EagerSet import EagerSet
 from sampling_mining_workflows_dsl.metadata.Metadata import Metadata
 
 class ChiSquareAnalysis:
     def __init__(self, metadata: Metadata[str]):
         self.metadata = metadata
 
-    def analyze(self, set_1: Set, set_2: Set):
+    def analyze(self, set_1: EagerSet, set_2: EagerSet):
         # Extract keywords from both sets
         keywords_1 = self.extract_keywords(set_1)
         keywords_2 = self.extract_keywords(set_2)
@@ -28,7 +28,7 @@ class ChiSquareAnalysis:
         print("Chi2:", chi2)
         print("p-value:", p)
 
-    def extract_keywords(self, s: Set):
+    def extract_keywords(self, s: EagerSet):
         keywords = []
         for element in s.get_elements():
             metadata_value = element.get_metadata_value(self.metadata)

@@ -4,7 +4,7 @@ from abc import ABC
 from typing import TYPE_CHECKING, Optional
 
 from sampling_mining_workflows_dsl.element.Loader import Loader
-from sampling_mining_workflows_dsl.element.Set import Set
+from sampling_mining_workflows_dsl.element.EagerSet import EagerSet
 from sampling_mining_workflows_dsl.element.Writer import Writer
 
 if TYPE_CHECKING:
@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 class Operator(ABC):
     def __init__(self, worflow):
         self.workflow = worflow
-        self._input: Set | None = None
-        self._output: Set | None = None
+        self._input: EagerSet | None = None
+        self._output: EagerSet | None = None
         self._output_writer: Writer | None = None
         self._next_operator: Operator | None = None
         self._previous_operator: Operator | None = None
@@ -43,10 +43,10 @@ class Operator(ABC):
                 self.workflow.add_metadata_type(metadata)
 
         # Load new metadata set
-        new_metadata_set: Set = self._loader.load_set()
+        new_metadata_set: EagerSet = self._loader.load_set()
         # Add metadata value to current output set
         for element in self._output.get_elements():
-            if not isinstance(element, Set):
+            if not isinstance(element, EagerSet):
                 id = element.get_id()
                 try:
                     new_element = new_metadata_set.get_element(id)
@@ -85,13 +85,13 @@ class Operator(ABC):
     def get_next_operator(self) -> Optional["Operator"]:
         return self._next_operator
 
-    def get_output(self) -> Set | None:
+    def get_output(self) -> EagerSet | None:
         return self._output
 
-    def get_merged_output(self) -> Set:
-        result = Set()
+    def get_merged_output(self) -> EagerSet:
+        result = EagerSet()
         for element in self._output.get_elements():
-            if isinstance(element, Set):
+            if isinstance(element, EagerSet):
                 # Recursively flatten nested Sets
                 result.union(element.flatten_set())
             else:
@@ -103,16 +103,16 @@ class Operator(ABC):
         self._output_writer = writer
         return self
 
-    def input_set(self, input_set: Set) -> "Operator":
+    def input_set(self, input_set: EagerSet) -> "Operator":
         self._input = input_set
         return self
 
-    def output_set(self, output_set: Set) -> "Operator":
+    def output_set(self, output_set: EagerSet) -> "Operator":
         self._output = output_set
         return self
     
 
-    def get_input(self) -> Set | None:
+    def get_input(self) -> EagerSet | None:
         return self._input
 
     def input(self, loader: Loader) -> "Operator":

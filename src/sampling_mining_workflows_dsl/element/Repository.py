@@ -14,8 +14,6 @@ class Repository(Element):
         return hash(self.get_id())
 
     def __eq__(self, other):
-        if not super().__eq__(other):
-            return False
         if not isinstance(other, Repository):
             return False
         return self.get_id() == other.get_id()

@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any
 
-from sampling_mining_workflows_dsl.element.Set import Set
+from sampling_mining_workflows_dsl.element.LazySet import LazySet
 from sampling_mining_workflows_dsl.metadata.Metadata import Metadata
 from sampling_mining_workflows_dsl.element.Repository import Repository
 
@@ -17,7 +17,7 @@ class Loader(ABC):
             self.metadatas[metadata.name] = metadata
 
     @abstractmethod
-    def load_set(self) -> Set:
+    def load_set(self) -> LazySet:
         pass
 
     def create_repository_from_map(self, map_object: dict[str, Any]) -> Repository:

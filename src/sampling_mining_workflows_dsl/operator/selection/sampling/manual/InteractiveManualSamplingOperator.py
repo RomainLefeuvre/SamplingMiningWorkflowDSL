@@ -1,7 +1,7 @@
 from typing import TypeVar
 
 from sampling_mining_workflows_dsl.element.Repository import Repository
-from sampling_mining_workflows_dsl.element.Set import Set
+from sampling_mining_workflows_dsl.element.EagerSet import EagerSet
 from sampling_mining_workflows_dsl.operator.Operator import Operator
 from sampling_mining_workflows_dsl.operator.selection.sampling.manual.ManualSamplingOperator import (
     ManualSamplingOperator,
@@ -16,7 +16,7 @@ class InteractiveManualSamplingOperator[T](ManualSamplingOperator):
         super().__init__(workflow)
 
     def execute(self) -> Operator:
-        self._output = Set()
+        self._output = EagerSet()
 
         print(f"input : \n{self._input.to_string() if self._input else 'None'}")
         for element in self._input.get_elements():

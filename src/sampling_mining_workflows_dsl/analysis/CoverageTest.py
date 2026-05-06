@@ -1,11 +1,11 @@
 from collections import Counter
 
-from sampling_mining_workflows_dsl.element.Set import Set
+from sampling_mining_workflows_dsl.element.EagerSet import EagerSet
 from sampling_mining_workflows_dsl.metadata.Metadata import Metadata
 
 
 class CoverageTest:
-    def __init__(self, metadata: Metadata, set_1: Set, set_2: Set):
+    def __init__(self, metadata: Metadata, set_1: EagerSet, set_2: EagerSet):
         self.metadata = metadata
         self.set_1 = set_1
         self.set_2 = set_2

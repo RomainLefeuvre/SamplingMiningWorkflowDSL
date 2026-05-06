@@ -34,9 +34,7 @@ class Element(ABC):
     def get_all_metadata_values(self) -> dict[Metadata, MetadataValue]:
         return self.metadata.copy()
 
-    def get_raw_metadata_values(self) -> dict[str, T]:
-        self
-
+    @abstractmethod
     def get_id(self) -> str:
         raise NotImplementedError("Subclasses must implement get_id method")
 

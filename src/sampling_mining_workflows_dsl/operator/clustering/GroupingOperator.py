@@ -1,7 +1,7 @@
 
 from typing import TYPE_CHECKING
 
-from sampling_mining_workflows_dsl.element.Set import Set
+from sampling_mining_workflows_dsl.element.EagerSet import EagerSet
 from sampling_mining_workflows_dsl.operator.Operator import Operator
 
 if TYPE_CHECKING:
@@ -15,7 +15,7 @@ class GroupingOperator(Operator):
         self.workflows = workflows
 
     def execute(self) -> Operator:
-        self._output = Set()
+        self._output = EagerSet()
         for w in self.workflows:
             # The input of the workflow is the input of the grouping operator
             w.set_workflow_input(self._input)

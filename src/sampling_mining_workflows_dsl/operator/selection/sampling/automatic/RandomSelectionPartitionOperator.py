@@ -1,5 +1,5 @@
 
-from sampling_mining_workflows_dsl.element.Set import Set
+from sampling_mining_workflows_dsl.element.EagerSet import EagerSet
 from sampling_mining_workflows_dsl.operator.Operator import Operator
 from sampling_mining_workflows_dsl.operator.selection.sampling.automatic.AutomaticSamplingOperator import (
     AutomaticSamplingOperator,
@@ -19,12 +19,12 @@ class RandomSelectionPartitionOperator(AutomaticSamplingOperator):
 
         random_selection_operator = OperatorFactory.random_selection_operator
 
-        self._output = Set()
-        is_set_of_set = all(isinstance(x, Set) for x in self._input.get_elements())
+        self._output = EagerSet()
+        is_set_of_set = all(isinstance(x, EagerSet) for x in self._input.get_elements())
 
         if is_set_of_set:
-            input_sets: list[Set] = [
-                x for x in self._input.get_elements() if isinstance(x, Set)
+            input_sets: list[EagerSet] = [
+                x for x in self._input.get_elements() if isinstance(x, EagerSet)
             ]
             total_size = sum(len(s.get_elements()) for s in input_sets)
 

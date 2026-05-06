@@ -2,7 +2,7 @@ import csv
 from pathlib import Path
 
 from sampling_mining_workflows_dsl.element.Repository import Repository
-from sampling_mining_workflows_dsl.element.Set import Set
+from sampling_mining_workflows_dsl.element.EagerSet import EagerSet
 
 
 # Note that the depth of the set should be 1
@@ -10,8 +10,8 @@ class CsvWriter:
     def __init__(self, set_path: str):
         self.set_path = Path(set_path)
 
-    def write_set(self, set_obj: Set):
-        if not isinstance(set_obj, Set):
+    def write_set(self, set_obj: EagerSet):
+        if not isinstance(set_obj, EagerSet):
             raise TypeError("Expected a Set object")
 
         # Depth-1: elements are Repository instances

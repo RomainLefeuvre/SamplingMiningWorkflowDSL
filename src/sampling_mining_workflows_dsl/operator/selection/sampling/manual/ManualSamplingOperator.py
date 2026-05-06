@@ -1,7 +1,7 @@
 from typing import TypeVar
 
 from sampling_mining_workflows_dsl.element.Repository import Repository
-from sampling_mining_workflows_dsl.element.Set import Set
+from sampling_mining_workflows_dsl.element.EagerSet import EagerSet
 from sampling_mining_workflows_dsl.operator.Operator import Operator
 from sampling_mining_workflows_dsl.operator.selection.sampling.SamplingOperator import (
     SamplingOperator,
@@ -16,7 +16,7 @@ class ManualSamplingOperator[T](SamplingOperator):
         self.ids = ids
 
     def execute(self) -> Operator:
-        self._output = Set()
+        self._output = EagerSet()
 
         for element in self._input.get_elements():
             if isinstance(element, Repository):

@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import pandas as pd
 
-from sampling_mining_workflows_dsl.element.Set import Set
+from sampling_mining_workflows_dsl.element.EagerSet import EagerSet
 from sampling_mining_workflows_dsl.metadata.Metadata import Metadata
 
 if TYPE_CHECKING:
@@ -42,12 +42,12 @@ class HistAnalysis:
         self.x_label = x_label
         self.fig_size = fig_size
 
-    def analyze(self, s: Set, file_name: str, op_info: str):
+    def analyze(self, s: EagerSet, file_name: str, op_info: str):
         # From Set to List of Metadata values
         try:
             metadata_values = []
             for element in s.get_elements():
-                if not isinstance(element, Set):
+                if not isinstance(element, EagerSet):
                     metadata_value: MetadataValue = element.get_metadata_value(
                         self.metadata
                     )

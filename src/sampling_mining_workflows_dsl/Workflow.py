@@ -9,7 +9,7 @@ from sampling_mining_workflows_dsl.analysis.YamaneWorkflowAnalysis import Yamane
 from sampling_mining_workflows_dsl.constraint.Constraint import Constraint
 from sampling_mining_workflows_dsl.element.Element import Element
 from sampling_mining_workflows_dsl.element.Loader import Loader
-from sampling_mining_workflows_dsl.element.Set import Set
+from sampling_mining_workflows_dsl.element.EagerSet import EagerSet
 from sampling_mining_workflows_dsl.element.Writer import Writer
 from sampling_mining_workflows_dsl.metadata.Metadata import Metadata
 from sampling_mining_workflows_dsl.operator.clustering.GroupingOperator import GroupingOperator
@@ -27,8 +27,8 @@ T = TypeVar("T")
 
 class Workflow:
     def __init__(self):
-        self._input: Set | None = None
-        self._output: Set | None = None
+        self._input: EagerSet | None = None
+        self._output: EagerSet | None = None
         self._output_writer: Writer | None = None
         self._root: Operator | None = None
         self._last_operator: Operator | None = None
@@ -97,10 +97,10 @@ class Workflow:
     def get_internal_set_by_index(self,index):
         return self.get_all_set_from_workflow()[index]
         
-    def get_internal_set_by_id(self, set_id: str) -> Set | None:
+    def get_internal_set_by_id(self, set_id: str) -> EagerSet | None:
         current: Operator= self._root
         while current is not None:
-            output:Set = current.get_output()
+            output:EagerSet = current.get_output()
             if not output is None and output.get_id() == set_id:
                 return output
             if current.isinstance(GroupingOperator):
@@ -155,13 +155,13 @@ class Workflow:
             return CompleteWorkflow(self)
         return None
 
-    def set_workflow_input(self, input_set: Set | None) -> "Workflow":
+    def set_workflow_input(self, input_set: EagerSet | None) -> "Workflow":
         self._input = input_set
         if self._root is not None:
             self._root.input_set(input_set)
         return self
 
-    def set_root_input(self, input_set: Set | None) -> "Workflow":
+    def set_root_input(self, input_set: EagerSet | None) -> "Workflow":
         if self._root is None:
             raise ValueError("Cannot set root input when no root operator is defined.")
         self._root.input_set(input_set)
@@ -174,7 +174,7 @@ class Workflow:
         self._output = output_element
         return self
 
-    def get_workflow_output(self) -> Set | None:
+    def get_workflow_output(self) -> EagerSet | None:
         return self._output
 
     def get_root(self) -> Operator | None:

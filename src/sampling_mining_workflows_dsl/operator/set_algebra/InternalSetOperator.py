@@ -1,7 +1,7 @@
 from typing import TypeVar
 
 from sampling_mining_workflows_dsl.element.Repository import Repository
-from sampling_mining_workflows_dsl.element.Set import Set
+from sampling_mining_workflows_dsl.element.EagerSet import EagerSet
 from sampling_mining_workflows_dsl.operator.Operator import Operator
 from sampling_mining_workflows_dsl.operator.selection.sampling.SamplingOperator import (
     SamplingOperator,
@@ -22,7 +22,7 @@ class InternalSetOperator(Operator):
         if self._input.get_depth() < 2:
             raise ValueError(f" Internal set Operator need a set of depth >= 2")
         if not self._output:
-            self._output = Set()
+            self._output = EagerSet()
         if not self._output.size()==0:
             print("Warning: output set is not empty, clearing it")
             self._output.remove_all_elements()
@@ -35,7 +35,7 @@ class InternalSetOperator(Operator):
         
         for i in self.indexes:
             set = self._input.get_element_by_index(i)
-            if not isinstance(set, Set):
+            if not isinstance(set, EagerSet):
                 raise ValueError("Internal set Operator need need a set of depth >= 2")
             self.set_function(set_res,set)
         for element in set_res.elements.values():

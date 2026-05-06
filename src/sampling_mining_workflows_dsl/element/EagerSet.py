@@ -1,25 +1,62 @@
 import random
 from functools import cmp_to_key
 from collections import OrderedDict
+from itertools import chain
+from typing import Iterable, Mapping, Self
 
 from sampling_mining_workflows_dsl.constraint.Comparator import Comparator
 from sampling_mining_workflows_dsl.element.Element import Element
+from sampling_mining_workflows_dsl.element.LazySet import LazySet
+from sampling_mining_workflows_dsl.element.Repository import Repository
+from sampling_mining_workflows_dsl.constraint.Constraint import Constraint
 
 
-class Set(Element):
+
+class EagerSet(LazySet):
     def __init__(self):
-        super().__init__()
-        self.elements = OrderedDict()
-        self.ids= set()
+        self.elements: OrderedDict[str, Element] = OrderedDict()
+        self.ids: set[str] = set()
         self.set_id = None
+    
+    @classmethod
+    def from_dataset(cls, metadatas, ds):
+        header = list(ds.keys())
+        id = metadatas[0]
+        col_indices = [header.index(m.name) for m in metadatas]
+        eager_set = cls()
+        for row in zip(*ds.values(), strict=True):
+            repo = Repository(id)
+            metadata_values = [m.create_metadata_value(row[c]) for m,c in zip(metadatas, col_indices)]
+            repo.add_metadata_values(metadata_values)
+            eager_set.add_element(repo)
+        return eager_set
+
+    @classmethod
+    def from_lazyset(cls, it: LazySet):
+        result = cls()
+        for x in it:
+            result.add_element(x)
+        return result
+    
+    @classmethod
+    def from_iter_of_maps(cls, metadatas, maps: Iterable[Mapping]) -> Self:
+        id = metadatas[0]
+        eager_set = cls()
+        for row in maps:
+            repo = Repository(id)
+            metadata_values = [m.create_metadata_value(row[m.name]) for m in metadatas]
+            repo.add_metadata_values(metadata_values)
+            eager_set.add_element(repo)
+        return eager_set
+
+    def __iter__(self):
+        yield from self.elements.values()
 
     def __hash__(self):
-        return hash(tuple(self.elements.items)) + super().__hash__()
+        return hash(tuple(self.elements.items())) + hash("EagerSet")
 
     def __eq__(self, other):
-        if not super().__eq__(other):
-            return False
-        if not isinstance(other, Set):
+        if not isinstance(other, EagerSet):
             return False
         return self.elements == other.elements
     
@@ -27,11 +64,11 @@ class Set(Element):
         if index < 0 or index >= len(self.elements):
             raise IndexError("Index out of range")
         return list(self.elements.values())[index]
-    def remove_all_elements(self) -> "Set":
+    def remove_all_elements(self) -> "EagerSet":
         self.elements.clear()
         self.ids.clear()
         return self
-    def add_element(self, element: Element) -> "Set":
+    def add_element(self, element: Element) -> "EagerSet":
         if not element.get_id() in self.ids:
             self.elements[element.get_id()]=element
             self.ids.add(element.get_id())
@@ -40,7 +77,7 @@ class Set(Element):
 
         return self
 
-    def sort_by_metadata(self, metadata_name: str, comparator: Comparator, reverse=False) -> "Set":
+    def sort_by_metadata(self, metadata_name: str, comparator: Comparator, reverse=False) -> "EagerSet":
         # Sort the items of the OrderedDict
         sorted_items = sorted(
             self.elements.items(),
@@ -55,33 +92,49 @@ class Set(Element):
     def get_depth(self) -> int:
         max_depth = 1
         for element in self.elements.values():
-            if isinstance(element, Set):
+            if isinstance(element, EagerSet):
                 max_depth = max(max_depth, 1 + element.get_depth())
         return max_depth
     
-    def union(self, other: "Set") -> "Set":
-        for element in other.elements.values():
-            self.add_element(element)
-        return self
+    def union(self, other: Iterable) -> "LazySet":
+        if isinstance(other, EagerSet):
+            for element in other.elements.values():
+                self.add_element(element)
+            return self
+        else:
+            return LazySet(chain(iter(self), iter(other)))
     
-    def intersection(self, other: "Set") -> "Set":
-        common_elements = Set()
+    def filter(self, constraint: Constraint) -> Self:
+        kept_elements = type(self)()
+        for element in self.elements.values():
+            if constraint.is_satisfied(element):
+                kept_elements.add_element(element)
+        return kept_elements
+        
+    def intersection(self, other: "EagerSet") -> "EagerSet":
+        if not isinstance(other, EagerSet):
+            raise NotImplementedError
+        common_elements = type(self)()
         for id, element in self.elements.items():
             if id in other.elements.keys():
                 common_elements.add_element(element)
         return common_elements
     
-    def difference(self, other: "Set") -> "Set":
+    def difference(self, other: "EagerSet") -> "EagerSet":
+        if not isinstance(other, EagerSet):
+            raise NotImplementedError
         """Return a new set with elements in this set but not in other"""
-        diff_elements = Set()
+        diff_elements = type(self)()
         for id, element in self.elements.items():
             if id not in other.elements.keys():
                 diff_elements.add_element(element)
         return diff_elements
     
-    def symmetric_difference(self, other: "Set") -> "Set":
+    def symmetric_difference(self, other: "EagerSet") -> "EagerSet":
+        if not isinstance(other, EagerSet):
+            raise NotImplementedError
         """Return a new set with elements in either set but not in both"""
-        sym_diff = Set()
+        sym_diff = type(self)()
         
         # Add elements from this set that are not in other
         for id, element in self.elements.items():
@@ -95,18 +148,18 @@ class Set(Element):
         
         return sym_diff
     
-    def is_subset(self, other: "Set") -> bool:
+    def is_subset(self, other: "EagerSet") -> bool:
         """Return True if all elements in this set are also in other"""
         for id in self.elements.keys():
             if id not in other.elements.keys():
                 return False
         return True
     
-    def is_superset(self, other: "Set") -> bool:
+    def is_superset(self, other: "EagerSet") -> bool:
         """Return True if all elements in other set are also in this set"""
         return other.is_subset(self)
     
-    def is_disjoint(self, other: "Set") -> bool:
+    def is_disjoint(self, other: "EagerSet") -> bool:
         """Return True if this set and other have no elements in common"""
         for id in self.elements.keys():
             if id in other.elements.keys():
@@ -123,27 +176,27 @@ class Set(Element):
         return len(self.elements)
 
     def get_element(self, id: str) -> Element:
-        if not id  in self.elements.keys():
+        if id not in self.elements:
             raise RuntimeError(f"Element with id {id} not found in the set")
-        return self.elements.get(id)
+        return self.elements[id]
     
-    def set_id(self, set_id: str) -> "Set":
-        self.set_id = set_id
-        return self 
+    # def set_id(self, set_id: str) -> "EagerSet":
+    #     self.set_id = set_id
+    #     return self 
 
-    def get_id(self):
-        if self.set_id is not None:
-            return self.set_id
+    # def get_id(self):
+    #     if self.set_id is not None:
+    #         return self.set_id
         
-        set_id = ""
-        for id in self.elements.keys():
-            set_id = set_id + "_" + str(id)
-        return set_id
+    #     set_id = ""
+    #     for id in self.elements.keys():
+    #         set_id = set_id + "_" + str(id)
+    #     return set_id
 
-    def flatten_set(self) -> "Set":
-        flattened = Set()
+    def flatten_set(self) -> "EagerSet":
+        flattened = EagerSet()
         for element in self.get_elements():
-            if isinstance(element, Set):
+            if isinstance(element, EagerSet):
                 # Recursively flatten nested Sets
                 flattened.union(element.flatten_set())
             else:
@@ -152,7 +205,7 @@ class Set(Element):
         return flattened
 
 
-    def get_random_subset(self, subset_size: int, seed: int) -> "Set":
+    def get_random_subset(self, subset_size: int, seed: int) -> "EagerSet":
         elements_list = self.get_elements()
         if subset_size > len(elements_list):
             print(
@@ -164,7 +217,7 @@ class Set(Element):
         random_indices = random.sample(range(len(elements_list)), subset_size)
         original_array = list(elements_list)
 
-        result = Set()
+        result = EagerSet()
         for index in random_indices:
             result.add_element(original_array[index])
 
@@ -173,8 +226,8 @@ class Set(Element):
     def get_elements(self) -> list[Element]:
         return list(self.elements.values())
     
-    def clone(self) -> "Set":
-        cloned_set = Set()
+    def clone(self) -> "EagerSet":
+        cloned_set = EagerSet()
         for element in self.get_elements():
             cloned_set.add_element(element)
         return cloned_set
@@ -193,7 +246,7 @@ class Set(Element):
         for i in range(element_to_print):
             next_element = elements_list[i]
 
-            if isinstance(next_element, Set):
+            if isinstance(next_element, EagerSet):
                 # Recursively call to_string for nested Sets
                 result += f"\n{next_element.to_string(level + 4)}"
             else:
