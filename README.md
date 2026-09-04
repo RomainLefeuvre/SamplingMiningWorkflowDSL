@@ -70,8 +70,6 @@ PythonWorkflowDSL/
         │   └── writer/                             # Data writer implementations
         ├── exec_visualizer/                        # Execution visualization
         │   └── ...                                  # Local server and visualization tools
-        ├── github_seart/                           # GitHub SEART integration
-        │   └── ...                                  # SEART data loader and metadata
         ├── metadata/                               # Metadata system
         │   └── ...                                  # Boolean, date, string metadata types
         ├── operator/                               # Workflow operators
