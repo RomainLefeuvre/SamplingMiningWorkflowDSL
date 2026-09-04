@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any
 from sampling_mining_workflows_dsl.element.loader.CsvLoader import CsvLoader
 from sampling_mining_workflows_dsl.element.Repository import Repository
 from sampling_mining_workflows_dsl.element.Set import Set
-from sampling_mining_workflows_dsl.github_seart.metadata import all_metadatas
+from sampling_mining_workflows_dsl.metadata.MetadataSeart import all_metadatas
 
 if TYPE_CHECKING:
     from sampling_mining_workflows_dsl.metadata.MetadataValue import MetadataValue
