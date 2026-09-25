@@ -1,4 +1,5 @@
 import os
+import re
 from typing import cast
 
 from graphviz import Digraph
@@ -11,9 +12,10 @@ from sampling_mining_workflows_dsl.operator.selection.filter.FilterOperator impo
 
 
 class WorkflowVisualizer:
-    def __init__(self, workflow,output_dir: str = "output_workflow_graph"):
+    def __init__(self, workflow, output_dir: str = "output_workflow_graph", wrap_constraint_operators: bool = False):
         self.workflow = workflow
         self.global_set_counter = 0  # Global counter shared across all levels
+        self.wrap_constraint_operators = wrap_constraint_operators
         if output_dir:
             self.output_dir = output_dir
             os.makedirs(self.output_dir, exist_ok=True)
@@ -51,8 +53,10 @@ class WorkflowVisualizer:
             dot.edge(node, "OutputSet")
 
         # Render
-        dot.render(svg_path, format="svg", cleanup=True)
+        dot_path = dot.save(f"{svg_path}.dot")
+        dot.render(svg_path, format="svg", cleanup=False)
         print(f"Workflow graph saved to {svg_path}")
+        print(f"Editable Graphviz source saved to {dot_path}")
 
         # HTML wrapper
         self.create_html_page(svg_path)
@@ -86,6 +90,8 @@ class WorkflowVisualizer:
                     constraint = cast(
                         "BoolConstraintString", op.get_constraint()
                     ).get_string_constraint()
+                    if self.wrap_constraint_operators:
+                        constraint = re.sub(r'\s+(and|or)\s+', r'\n\1 ', constraint, flags=re.IGNORECASE)
                     formatted_size = f"{output_set.flatten_set().size():,}".replace(',', ' ')
                     label = f"Filter Operator\n{constraint}\n\nSET#{self.global_set_counter}\n Size : {formatted_size}"
                 elif isinstance(op.get_constraint(), BoolConstraint):

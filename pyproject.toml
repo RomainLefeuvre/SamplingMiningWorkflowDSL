@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "sampling-mining-workflows-dsl"
-version = "0.0.1"
+version = "0.0.4"
 description = "A python internal DSL to specify, execute and analyse mining software repositories sampling workflows."
 readme = "README.md"
 requires-python = ">=3.13"
